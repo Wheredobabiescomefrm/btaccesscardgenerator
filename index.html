@@ -303,7 +303,7 @@
             });
         }
 
-        function shareToX() {
+        async function shareToX() {
             const name = document.getElementById('cardName').innerText;
             if (name === '---') return alert("Please generate the access card first.");
 
@@ -312,7 +312,33 @@
             const location = document.getElementById('cardLocation').innerText;
 
             const tweetText = `Excited to share my personalized Bulktrader Access Card! \n\nUsername: ${name}\nCard No: ${cardNum}\nNationality: ${nat}\nBased In: ${location}\n\nScan the QR to visit my profile! #Bulktrader #AccessCard`;
-            
+
+            if (navigator.canShare) {
+                const card = document.getElementById('idCard');
+                try {
+                    const canvas = await html2canvas(card, { 
+                        useCORS: true, 
+                        allowTaint: false,
+                        scale: 3,
+                        backgroundColor: null 
+                    });
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                    const file = new File([blob], 'Bulktrader_Access_Card.png', { type: 'image/png' });
+
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: 'Bulktrader Access Card',
+                            text: tweetText,
+                            files: [file]
+                        });
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error sharing:', error);
+                }
+            }
+
+            // Fallback to tweet intent without image
             window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}`, '_blank');
         }
     </script>
