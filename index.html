@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bulktrader Access Card Generator</title>
+    <title>Bulktrader Access Terminal</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Great+Vibes&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -11,47 +11,67 @@
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #121212;
-            color: white;
+            margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 40px 20px;
-            margin: 0;
+            min-height: 100vh;
+            color: white;
+            background-color: #121212;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Fixed Background Layer */
+        .site-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('web-background.jpg'); /* Name your file this! */
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            filter: blur(8px) brightness(0.5); /* The blur and darkening effect */
+            transform: scale(1.1); /* Prevents white edges from blur */
+        }
+
+        h1 {
+            font-family: 'Cinzel';
+            color: #c5a059;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.9);
+            margin-bottom: 20px;
+            text-align: center;
         }
 
         .controls {
-            background: #252525;
+            background: rgba(30, 30, 30, 0.85);
             padding: 25px;
             border-radius: 12px;
             margin-bottom: 30px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             max-width: 600px;
             width: 100%;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 160, 89, 0.2);
         }
 
         .control-group { display: flex; flex-direction: column; }
-        label { font-size: 11px; margin-bottom: 5px; color: #aaa; text-transform: uppercase; }
+        label { font-size: 11px; margin-bottom: 5px; color: #ccc; text-transform: uppercase; letter-spacing: 1px; }
         
         input, select {
             padding: 10px;
             border-radius: 6px;
             border: 1px solid #444;
-            background: #1a1a1a;
+            background: rgba(0,0,0,0.5);
             color: white;
             width: 100%;
             box-sizing: border-box;
         }
 
-        .btn-group {
-            grid-column: span 2;
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
+        .btn-group { grid-column: span 2; display: flex; gap: 10px; margin-top: 10px; }
 
         button {
             flex: 1;
@@ -63,10 +83,13 @@
             border-radius: 6px;
             font-family: 'Cinzel', serif;
             text-transform: uppercase;
+            transition: 0.3s;
         }
 
         .btn-generate { background: #c5a059; }
+        .btn-generate:hover { background: #e5c079; transform: translateY(-2px); }
         .btn-download { background: #ffffff; }
+        .btn-download:hover { background: #ddd; transform: translateY(-2px); }
 
         /* ID CARD STYLING */
         .card-wrapper {
@@ -75,17 +98,16 @@
             height: 377px;
             border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
             background-color: #000;
         }
 
         .card-bg { width: 100%; height: 100%; object-fit: cover; position: absolute; z-index: 1; }
 
-        /* CONTENT SHIFTED DOWN 10% */
         .card-content {
             position: absolute;
             z-index: 2;
-            top: 110px; /* Moved down from 75px */
+            top: 110px; 
             left: 0;
             width: 100%;
             height: calc(100% - 110px);
@@ -94,11 +116,10 @@
             box-sizing: border-box;
         }
 
-        /* Photo Area */
         .photo-area { width: 140px; display: flex; flex-direction: column; }
         .avatar-frame {
             width: 130px;
-            height: 155px; /* Slightly adjusted to fit new shift */
+            height: 155px; 
             border: 1.5px solid rgba(197, 160, 89, 0.4);
             background-color: #000;
             border-radius: 4px;
@@ -106,7 +127,6 @@
         }
         .avatar-frame img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Information Area */
         .details-area {
             flex: 1;
             padding-left: 25px;
@@ -114,7 +134,7 @@
             font-family: 'Cinzel', serif;
         }
 
-        .row { display: flex; gap: 20px; margin-bottom: 15px; }
+        .row { display: flex; gap: 20px; margin-bottom: 12px; }
         .field { display: flex; flex-direction: column; }
         .label {
             font-size: 8px;
@@ -126,14 +146,13 @@
         }
         .value { font-size: 13px; font-weight: 700; text-shadow: 1px 1px 2px #000; }
 
-        /* Signature & QR Area - Adjusted for shift */
         .bottom-right-container {
             position: absolute;
-            bottom: 20px; /* Adjusted from 25px */
+            bottom: 25px;
             right: 45px;
             display: flex;
             align-items: flex-end;
-            gap: 20px;
+            gap: 15px;
             z-index: 5;
         }
 
@@ -160,146 +179,70 @@
 </head>
 <body>
 
-    <h1 style="font-family: 'Cinzel'; color: #c5a059;">BT Access System</h1>
+    <div class="site-bg"></div>
+
+    <h1>Bulktrader Access Terminal</h1>
 
     <div class="controls">
-        <div class="control-group">
-            <label>Twitter User</label>
-            <input type="text" id="twitterHandle" placeholder="username">
-        </div>
-        <div class="control-group">
-            <label>Nationality</label>
-            <input type="text" id="natInput" placeholder="e.g. American">
-        </div>
-        <div class="control-group">
-            <label>Based In</label>
-            <input type="text" id="location" placeholder="e.g. New York, NY">
-        </div>
+        <div class="control-group"><label>Twitter User</label><input type="text" id="twitterHandle" placeholder="e.g. Satoshi"></div>
+        <div class="control-group"><label>Nationality</label><input type="text" id="natInput" placeholder="e.g. Japanese"></div>
+        <div class="control-group" style="grid-column: span 2;"><label>Based In</label><input type="text" id="location" placeholder="e.g. Tokyo, JP"></div>
         <div class="control-group">
             <label>Sex</label>
-            <select id="sex">
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-                <option value="X">Other</option>
-            </select>
+            <select id="sex"><option value="M">Male</option><option value="F">Female</option><option value="X">Other</option></select>
         </div>
-        <div class="control-group" style="grid-column: span 2;">
-            <label>Date of Birth</label>
-            <input type="date" id="dob">
-        </div>
-        
+        <div class="control-group"><label>Date of Birth</label><input type="date" id="dob"></div>
         <div class="btn-group">
-            <button class="btn-generate" onclick="generateID()">Generate Card</button>
+            <button class="btn-generate" onclick="generateID()">Generate Access Card</button>
             <button class="btn-download" onclick="downloadCard()">Download PNG</button>
         </div>
     </div>
 
     <div class="card-wrapper" id="idCard">
         <img src="background.png" alt="ID Background" class="card-bg">
-        
         <div class="card-content">
             <div class="photo-area">
-                <div class="avatar-frame">
-                    <img id="cardAvatar" crossorigin="anonymous" src="https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png">
-                </div>
-                <div class="field" style="margin-top: 15px;">
-                    <div class="label">Card Number</div>
-                    <div class="value" id="cardNum" style="font-size: 10px;">BT-0000-0000</div>
-                </div>
+                <div class="avatar-frame"><img id="cardAvatar" crossorigin="anonymous" src="https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png"></div>
+                <div class="field" style="margin-top: 15px;"><div class="label">Card Number</div><div class="value" id="cardNum" style="font-size: 10px;">BT-0000-0000</div></div>
             </div>
-
             <div class="details-area">
+                <div class="row"><div class="field" style="width: 100%;"><div class="label">Identification</div><div class="value" id="cardName">---</div></div></div>
                 <div class="row">
-                    <div class="field" style="width: 100%;">
-                        <div class="label">Identification</div>
-                        <div class="value" id="cardName">---</div>
-                    </div>
+                    <div class="field" style="flex: 1;"><div class="label">Nationality</div><div class="value" id="cardNat">---</div></div>
+                    <div class="field" style="flex: 1.5;"><div class="label">Based In</div><div class="value" id="cardLocation">---</div></div>
                 </div>
-
                 <div class="row">
-                    <div class="field" style="flex: 1;">
-                        <div class="label">Nationality</div>
-                        <div class="value" id="cardNat">---</div>
-                    </div>
-                    <div class="field" style="flex: 1.5;">
-                        <div class="label">Based In</div>
-                        <div class="value" id="cardLocation">---</div>
-                    </div>
+                    <div class="field" style="flex: 1;"><div class="label">Sex</div><div class="value" id="cardSex">-</div></div>
+                    <div class="field" style="flex: 1.5;"><div class="label">DOB</div><div class="value" id="cardDob">--/--/----</div></div>
                 </div>
-
-                <div class="row">
-                    <div class="field" style="flex: 1;">
-                        <div class="label">Sex</div>
-                        <div class="value" id="cardSex">-</div>
-                    </div>
-                    <div class="field" style="flex: 1.5;">
-                        <div class="label">DOB</div>
-                        <div class="value" id="cardDob">--/--/----</div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="field">
-                        <div class="label">Date of Issue</div>
-                        <div class="value" id="cardIssue">--/--/----</div>
-                    </div>
-                </div>
+                <div class="row"><div class="field"><div class="label">Date of Issue</div><div class="value" id="cardIssue">--/--/----</div></div></div>
             </div>
         </div>
-
         <div class="bottom-right-container">
-            <div class="signature-section">
-                <div class="cursive-sig" id="cardSig">Signature</div>
-                <div class="sig-line"></div>
-                <div class="sig-label">Authorized Access Holder</div>
-            </div>
+            <div class="signature-section"><div class="cursive-sig" id="cardSig">Signature</div><div class="sig-line"></div><div class="sig-label">Authorized Access Holder</div></div>
             <div id="qrcode"></div>
         </div>
     </div>
 
     <script>
-        let qrcode = new QRCode(document.getElementById("qrcode"), {
-            text: "https://twitter.com",
-            width: 50,
-            height: 50,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-
+        let qrcode = new QRCode(document.getElementById("qrcode"), { text: "https://twitter.com", width: 50, height: 50 });
         function generateID() {
-            const handle = document.getElementById('twitterHandle').value;
-            const nat = document.getElementById('natInput').value;
-            const loc = document.getElementById('location').value;
-            const sex = document.getElementById('sex').value;
+            const h = document.getElementById('twitterHandle').value;
+            if(!h) return alert("Enter username");
+            document.getElementById('cardName').innerText = "@" + h.toUpperCase();
+            document.getElementById('cardNat').innerText = (document.getElementById('natInput').value || "Unknown").toUpperCase();
+            document.getElementById('cardLocation').innerText = (document.getElementById('location').value || "Global").toUpperCase();
+            document.getElementById('cardSex').innerText = document.getElementById('sex').value;
             const dob = document.getElementById('dob').value;
-
-            if(!handle) return alert("Please enter a username.");
-
-            document.getElementById('cardName').innerText = "@" + handle.toUpperCase();
-            document.getElementById('cardNat').innerText = (nat || "Unknown").toUpperCase();
-            document.getElementById('cardLocation').innerText = (loc || "Global").toUpperCase();
-            document.getElementById('cardSex').innerText = sex;
-            
             if(dob) document.getElementById('cardDob').innerText = new Date(dob).toLocaleDateString('en-GB');
             document.getElementById('cardIssue').innerText = new Date().toLocaleDateString('en-GB');
-
-            const rand = Math.floor(1000 + Math.random() * 9000);
-            const rand2 = Math.floor(1000 + Math.random() * 9000);
-            document.getElementById('cardNum').innerText = `BT-${rand}-${rand2}`;
-
-            qrcode.clear();
-            qrcode.makeCode(`https://twitter.com/${handle}`);
-
-            document.getElementById('cardSig').innerText = handle;
-            document.getElementById('cardAvatar').src = `https://unavatar.io/twitter/${handle}?t=${Date.now()}`;
+            document.getElementById('cardNum').innerText = `BT-${Math.floor(1000+Math.random()*8999)}-${Math.floor(1000+Math.random()*8999)}`;
+            qrcode.clear(); qrcode.makeCode(`https://twitter.com/${h}`);
+            document.getElementById('cardSig').innerText = h;
+            document.getElementById('cardAvatar').src = `https://unavatar.io/twitter/${h}?t=${Date.now()}`;
         }
-
         function downloadCard() {
-            html2canvas(document.getElementById('idCard'), {
-                useCORS: true,
-                scale: 3
-            }).then(canvas => {
+            html2canvas(document.getElementById('idCard'), { useCORS: true, scale: 3 }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'Bulktrader_Access_Card.png';
                 link.href = canvas.toDataURL();
@@ -308,5 +251,4 @@
         }
     </script>
 </body>
-
 </html>
