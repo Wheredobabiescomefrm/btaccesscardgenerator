@@ -246,9 +246,8 @@
 
             // FETCH IMAGE WITH PROXY (To solve CORS issues)
             const img = document.getElementById('cardAvatar');
-            img.crossOrigin = "anonymous";
             // We use unavatar with a cross-origin attribute
-            img.src = `https://unavatar.io/twitter/${h}`;
+            img.src = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://unavatar.io/x/${h}`)}`;
 
             img.onerror = function() {
                 this.src = "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png";
