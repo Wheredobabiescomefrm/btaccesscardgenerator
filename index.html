@@ -88,6 +88,7 @@
 
         .btn-generate { background: #c5a059; }
         .btn-download { background: #ffffff; }
+        .btn-share { background: #1DA1F2; color: #fff; }
 
         /* ID CARD STYLING */
         .card-wrapper {
@@ -216,6 +217,7 @@
         <div class="btn-group">
             <button class="btn-generate" onclick="generateID()">Generate Access Card</button>
             <button class="btn-download" onclick="downloadCard()">Download PNG</button>
+            <button class="btn-share" onclick="shareToX()">Share to X</button>
         </div>
     </div>
 
@@ -299,6 +301,19 @@
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });
+        }
+
+        function shareToX() {
+            const name = document.getElementById('cardName').innerText;
+            if (name === '---') return alert("Please generate the access card first.");
+
+            const cardNum = document.getElementById('cardNum').innerText;
+            const nat = document.getElementById('cardNat').innerText;
+            const location = document.getElementById('cardLocation').innerText;
+
+            const tweetText = `Excited to share my personalized Bulktrader Access Card! \n\nUsername: ${name}\nCard No: ${cardNum}\nNationality: ${nat}\nBased In: ${location}\n\nScan the QR to visit my profile! #Bulktrader #AccessCard`;
+            
+            window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}`, '_blank');
         }
     </script>
 </body>
