@@ -123,6 +123,7 @@
             background-color: #000;
             border-radius: 4px;
             overflow: hidden;
+            position: relative;
         }
         .avatar-frame img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -174,6 +175,27 @@
             border-radius: 4px;
         }
         #qrcode img { width: 100% !important; height: 100% !important; }
+
+        /* Loading Indicator */
+        .loader {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #c5a059;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -183,7 +205,7 @@
     <h1>Bulktrader Access Terminal</h1>
 
     <div class="controls">
-        <div class="control-group"><label>Twitter User</label><input type="text" id="twitterHandle" placeholder="username only"></div>
+        <div class="control-group"><label>X User</label><input type="text" id="twitterHandle" placeholder="username only"></div>
         <div class="control-group"><label>Nationality</label><input type="text" id="natInput" placeholder="Nationality"></div>
         <div class="control-group" style="grid-column: span 2;"><label>Based In</label><input type="text" id="location" placeholder="City, Country"></div>
         <div class="control-group">
@@ -201,7 +223,10 @@
         <img src="background.png" alt="ID Background" class="card-bg">
         <div class="card-content">
             <div class="photo-area">
-                <div class="avatar-frame"><img id="cardAvatar" src="https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png"></div>
+                <div class="avatar-frame">
+                    <img id="cardAvatar" src="https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png">
+                    <div class="loader" id="avatarLoader"></div>
+                </div>
                 <div class="field" style="margin-top: 15px;"><div class="label">Card Number</div><div class="value" id="cardNum" style="font-size: 10px;">BT-0000-0000</div></div>
             </div>
             <div class="details-area">
@@ -224,7 +249,7 @@
     </div>
 
     <script>
-        let qrcode = new QRCode(document.getElementById("qrcode"), { text: "https://twitter.com", width: 50, height: 50 });
+        let qrcode = new QRCode(document.getElementById("qrcode"), { text: "https://x.com", width: 50, height: 50 });
 
         function generateID() {
             const h = document.getElementById('twitterHandle').value.replace('@', '');
@@ -241,16 +266,23 @@
             document.getElementById('cardIssue').innerText = new Date().toLocaleDateString('en-GB');
             document.getElementById('cardNum').innerText = `BT-${Math.floor(1000+Math.random()*8999)}-${Math.floor(1000+Math.random()*8999)}`;
             
-            qrcode.clear(); qrcode.makeCode(`https://twitter.com/${h}`);
+            qrcode.clear(); qrcode.makeCode(`https://x.com/${h}`);
             document.getElementById('cardSig').innerText = h;
 
             // FETCH IMAGE WITH PROXY (To solve CORS issues)
             const img = document.getElementById('cardAvatar');
-            // We use unavatar with a cross-origin attribute
-            img.src = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://unavatar.io/x/${h}`)}`;
+            const loader = document.getElementById('avatarLoader');
+            loader.style.display = 'block';
+            img.crossOrigin = "anonymous";
+            img.src = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(`https://unavatar.io/x/${h}`)}`;
+
+            img.onload = function() {
+                loader.style.display = 'none';
+            };
 
             img.onerror = function() {
                 this.src = "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png";
+                loader.style.display = 'none';
             };
         }
 
